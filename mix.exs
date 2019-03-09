@@ -14,7 +14,7 @@ defmodule Twserv.MixProject do
     # Run "mix help compile.app" to learn about applications.
     def application do
     [
-        extra_applications: [:logger, :cowboy, :plug, :poison],
+        extra_applications: [:logger, :cowboy, :plug, :poison, :rethinkdb],
         mod: {Twserv.Application, []}
     ]
     end
@@ -25,7 +25,9 @@ defmodule Twserv.MixProject do
         {:cowboy, "~> 1.0.0"},
         {:plug, "~> 1.5"},
         {:plug_cowboy, "~> 1.0"},
-        {:poison, "~> 3.1"}
+        {:httpoison, "~> 1.4"},
+        {:poison, "~> 3.1", override: true},
+        {:rethinkdb, git: "https://github.com/hamiltop/rethinkdb-elixir.git", tag: "0.4.0"}
     ]
     end
 end
