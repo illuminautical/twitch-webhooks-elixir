@@ -15,11 +15,8 @@ defmodule Twserv.Router do
     end
 
     get "/test" do
-        q = RethinkDB.Query.table("notifications")
-            |> RethinkDB.Query.filter(%{webhook: true})
-            |> RethinkDB.Query.count()
-            |> RethinkDB.run(Twserv.Database)
-        resp = Poison.encode!(%{count: q.data})
+        re = HTTP.Twitch.get!("/users?login=twitchbot_discord")
+        resp = Poison.encode!(re)
         conn
         |> put_resp_content_type("application/json")
         |> send_resp(200, resp)
@@ -37,13 +34,14 @@ defmodule Twserv.Router do
             embed = %{
                 title: "**#{data["title"]}**",
                 url: "https://twitch.tv/#{data["user_name"]}",
+                color: 0x6441A4,
                 author: %{
                     name: data["user_name"],
                     url: "https://twitch.tv/#{data["user_name"]}",
                     icon_url: "http://nil.nil/nil.jpeg"
                 },
                 description: "Playing #{data["game_id"]} for #{data["viewer_count"]} viewers\n[Watch Stream](https://twitch.tv/#{data["user_name"]})",
-                thumbnail: %{
+                image: %{
                     url: data["thumbnail_url"]
                 },
                 footer: %{
@@ -51,18 +49,12 @@ defmodule Twserv.Router do
                 }
             }
             Enum.each(q, fn(notif) ->
-                require Logger
-                Logger.info("wowee 1")
-                IO.puts("wowee 2")
                 unless notif["last_stream_id"] == data["stream_id"] do
                     message = %{
                         content: notif["message"],
                         embed: embed
                     }
                     sent = HTTP.Discord.post "/channels/#{notif["channel"]}/messages", Poison.encode!(message)
-                    Logger.info(inspect sent)
-                    Logger.info("wowee")
-                    IO.puts "wowee"
                 end
             end)
             #q = RethinkDB.Query.table("notifications")
